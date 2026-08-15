@@ -279,14 +279,49 @@ I would also caution the investigator about use of complete case, as there may b
 
 *Estimate the association between baseline social isolation and incident dementia, using the index you built in Question 1. Write down the equation for your model and say what the parameter of interest means. Report an estimate with a confidence interval and justify your covariates* 
 
-**Reponse**: 
+**Response**: Estimate the association between baseline isolation index score and dem_hx, incident dementia. Since incident dementia incorporates a time component, and we have a predictor of interest, a survival model would be ideal. Since the follow up time and outcomes are given as survtime, death, dem_dx, dem_time, we have the capacity to perform this analysis. 
 
+Other possible analysis: we could also simply run a logistic regression whether the baseline measure of social isolation is associated with onset of dementia, but that would be more of an incidence measure of risk rather than a hazard risk ratio. 
+
+
+To construct the survival/ KM curve first and the Cox Ph model where we are using baseline social isolation index as a predictor:
 
 ```{r}
+# Univariate model
+surv_model <- coxph(
+  Surv(survtime, dem_dx) ~ baseline_iso_score, 
+  data = dat
+)
+summary(surv_model)
+
+# Multivariate model
+surv_model_2 <- coxph(
+  Surv(survtime, dem_dx) ~ baseline_iso_score + gender + age06 + sbp06 + bmi06 + depress06, 
+  data = dat
+)
+summary(surv_model_2)
+
+
+
 
 ```
 
 
 
+
+# Comments, Next Steps, Takeaways
+
+- I would derive an age variable from the birth year, for the age at which dementia was diagnosed and at which timepoint that was. 
+
+- derive or check for competing risk between death and incident dementia
+
+- I would readjust the baseline isolation score, as I found alot of missingness in that derived score, which may have been due to a logic error early on. 
+
+
+- I would add a forest plot to the final question, to better display and explain the coefficient from the cox ph model and how it compared to other covariates.
+
+- I would check for confounding, double check the long data reshape
+
+- I would check my cox ph assumptions that the hazard function is constant across time, I would plot the cox.zph() for the data is normal and independent assumption. 
 
 
