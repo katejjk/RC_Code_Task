@@ -256,7 +256,7 @@ head(dat.long)
 
 Next part: Is the pattern monotone or intermittent? 
 
-**Response**: Thought process: If the pattern of missingness was monotone, then would cog_score and missingness be consistent across each time/ wave? And for intermittent, that would imply that the participant missed one of the visits and came back for a later one. THere may be multiple patterns driving missingness, in which either (1) the participant has not reached that timepoint (would need to check the start date or enrollment date of particpant to study to see if it differed by maybe that the time between waves), (2) the participant is lost to follow up, or the event (death or dementia, check for competiting risks) had occurred, (3) the participant missed a visit and came to another timepoint. This may be an interrupted timepoint, such as COVID (large one), or individual level due to illness or other relating factor why the particpant missed a visit, such as difficulty access to healthcare. Pattern could be MCAR, MNAR, or MAR. 
+**Response**: Thought process: If the pattern of missingness was monotone, then would cog_score and missingness be consistent across each time/ wave? And for intermittent, that would imply that the participant missed one of the visits and came back for a later one. THere may be multiple patterns driving missingness, in which either (1) the participant has not reached that timepoint (would need to check the start date or enrollment date of particpant to study to see if it differed by maybe that the time between waves), (2) the participant is lost to follow up, or the event (death or dementia, check for competiting risks) had occurred, (3) the participant missed a visit and came to another timepoint. This may be an interrupted timepoint, such as COVID (large one), or individual level due to illness or other relating factor why the particpant missed a visit, such as difficulty access to healthcare. Pattern could be MCAR, MNAR, or MAR.
 
 *I must note: I am not quite sure I understand the difference strongly enough what monotone vs intermittent visit implies in this case to assess the count per participant without further reference.*
 
@@ -273,18 +273,19 @@ nrow(count_dat) # 1324
 There are 1324 participants with all 7 visits. I would remake the original long data table including a filter step. Or, from the long dataset, I would try to filter for all those with at least 7 observations. I would group by participant id, and include those whose count of rows per id is at least 7. 
 
 
-
-
-
-
-
-
-
-
-
-
+I would also caution the investigator about use of complete case, as there may be underlying factors into why a participant missed a visit that may be indicative of the event. I suggest a sensitivity analysis comparing complete case vs at least 6 visits or use of all and incorporate that missing a visit as a covariate. 
 
 # Question 4: 
+
+*Estimate the association between baseline social isolation and incident dementia, using the index you built in Question 1. Write down the equation for your model and say what the parameter of interest means. Report an estimate with a confidence interval and justify your covariates* 
+
+**Reponse**: 
+
+
+```{r}
+
+```
+
 
 
 
