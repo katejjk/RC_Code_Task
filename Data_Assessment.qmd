@@ -214,13 +214,74 @@ dat_last %>%
 ## Find the average follow up length
 
 mean(dat$survtime, na.rm = T)
+
+# mean(dat$dem_time) not exactly follow up
   
 ```
 
 Average Follow up length was 9.91 years. 
 
 
+
 # Question 3:
+
+* Describe the missing data in the cognitive scores. Reshape the data to long format and
+tabulate missing cog by wave. Is the pattern monotone or intermittent? More than one process produces it, so identify them and report how many participants fall into each. A colleague wants to analyze only participants with all seven visits. How many is that, and what would you do instead?*
+
+
+```{r}
+# General format for reshaping data from wide to long/ from course: 
+# dat.long = reshape(dat,
+#               varying = list(12:18),
+#               times =  c(1998, 2001, 2004, 2007, 2010, 2013, 2016),  
+#               v.names = "measured_cogfxn",
+#               idvar = "pid",
+#               direction = "long")
+
+# Using Tidyverse (had to google to remember pivot_longer exists!)
+
+dat.long <- dat %>%
+  select(id, starts_with("cog")) %>%
+  pivot_longer(
+    cols = starts_with("cog"),
+    names_to = "wave",
+    names_prefix =  "cog",
+    values_to = "cog_score"
+  ) 
+
+dat.long$missing <- is.na(dat.long$cog_score)
+table(dat.long$missing)
+head(dat.long)
+```
+
+Next part: Is the pattern monotone or intermittent? 
+
+**Response**: Thought process: If the pattern of missingness was monotone, then would cog_score and missingness be consistent across each time/ wave? And for intermittent, that would imply that the participant missed one of the visits and came back for a later one. THere may be multiple patterns driving missingness, in which either (1) the participant has not reached that timepoint (would need to check the start date or enrollment date of particpant to study to see if it differed by maybe that the time between waves), (2) the participant is lost to follow up, or the event (death or dementia, check for competiting risks) had occurred, (3) the participant missed a visit and came to another timepoint. This may be an interrupted timepoint, such as COVID (large one), or individual level due to illness or other relating factor why the particpant missed a visit, such as difficulty access to healthcare. Pattern could be MCAR, MNAR, or MAR. 
+
+*I must note: I am not quite sure I understand the difference strongly enough what monotone vs intermittent visit implies in this case to assess the count per participant without further reference.*
+
+
+Next part:  A colleague wants to analyze only participants with all seven visits. How many is that, and what would you do instead?
+
+
+```{r}
+# Add number of visits and ensure number is exactly 7. I.e., in long data, include only participants with 7 completed visits
+count_dat <- dat[!is.na(dat$cog18),]
+nrow(count_dat) # 1324
+```
+
+There are 1324 participants with all 7 visits. I would remake the original long data table including a filter step. Or, from the long dataset, I would try to filter for all those with at least 7 observations. I would group by participant id, and include those whose count of rows per id is at least 7. 
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Question 4: 
