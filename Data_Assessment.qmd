@@ -112,6 +112,14 @@ dat$frcon06[dat$frcon06 == 9] <- NA
 ## Cautionary note: 7 was not included for religion but was found as a value, so safe side to make it NA
 dat$relig06[dat$relig06 == 7] <- NA
 
+## assess missingness again
+
+sapply(dat, function(x) sum(is.na(x)))
+```
+
+```{r}
+
+
 ## Iso-index questionnaires (all but question 2, but question 2 indiciates whether response to question 3,4, or 5):
 
 
@@ -174,7 +182,7 @@ dat %>%
 summary(dat$baseline_iso_score) # gives the mean, SD, and median
 sd(dat$baseline_iso_score, na.rm = T) # 1.42
 
-# Summary by sex:
+# Summary by gender (out of curiosity):
 (sex_summary <- dat %>%
   group_by(gender) %>%
   count(baseline_iso_score))
@@ -183,9 +191,39 @@ sd(dat$baseline_iso_score, na.rm = T) # 1.42
 
 
 
+# Question 2: 
 
 
+* Check the timing variables. Are survtime, dem_time, and the visit times consistent with one another? Show how you checked. What is the average length of follow-up?*
 
+
+```{r}
+# Check timing: ensure spacing from time06, baseline time06 = 0
+times <- c("time06", "time08", "time10", "time12", "time14", "time16")
+
+# searched "how to find the largest val out of multiple columns"
+dat_last <- dat %>%
+  mutate(
+    last_visit = pmax(time06, time08, time10, time12, time14, time16, time18, na.rm = TRUE),
+    consistent = last_visit <= survtime
+  )
+head(dat_last$last_visit) # did not work
+dat_last %>%
+  count(consistent)
+
+## Find the average follow up length
+
+mean(dat$survtime, na.rm = T)
+  
+```
+
+Average Follow up length was 9.91 years. 
+
+
+# Question 3:
+
+
+# Question 4: 
 
 
 
