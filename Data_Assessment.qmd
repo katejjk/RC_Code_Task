@@ -93,6 +93,8 @@ Range 0 to 6, higher means more isolated.
 6. No group participation: 1 point if Q7 = 1 (never).
 
 
+Note: Process took about 20 minute, large debugging came from mutate() and not rememebering that it takes only "=" for variable assignment, and not "<-". 
+
 ```{r}
 dat %>% count(livalone06) # 1 = yes
 dat %>% count(nkids) # 98 <- NA
@@ -138,8 +140,7 @@ dat <- dat %>%
   mutate(
     iso_with_kids = case_when(
       nkids == 0 ~ 0, # If no kids, then must be 0, do not add the next questions
-      kidcon06 %in% c(1,2,3) ~ 1, # 1 point, if 1,2 or 3 
-      TRUE ~ NA_real_
+      kidcon06 %in% c(1,2,3) ~ 1 # 1 point, if 1,2 or 3 
       ),
   iso_no_friends =  ifelse(frcon06 %in% c(1,2,3), 1, 0),
   iso_relatives =  ifelse(relcon06 %in% c(1,2,3), 1, 0), 
@@ -151,13 +152,34 @@ colnames(dat)
 ## Create the baseline score: Sum of 6:
 dat <- dat %>%
   mutate(baseline_iso_score = rowSums(
-    select(., livalone06, iso_with_kids, iso_no_friends, iso_relatives, iso_religion, iso_no_group)
+    select(., livalone06, iso_with_kids, iso_no_friends, iso_relatives, iso_religion, iso_no_group),na.rm = FALSE
   ))
-
 
 ```
 
 
+## Question 1, Part 2, describe baseline score frequency
+
+**Reponse**: 1223 where able to be scored at baseline, mean was 2.97, median was 3, approx normally skewed, sd was approx 1.42. Index appears reasonable, however there is alot of missingness that could be addressed. Theory is from the case_when for the kid count, as that had 375 missing observations, rowSum may also be including NA in summary, leaving the baseline indicator as NA. 
+
+```{r}
+## count of number that were scorable:
+sum(!is.na(dat$baseline_iso_score)) # 1223 of 2404
+
+# Count of frequency of each value
+dat %>% 
+  count(baseline_iso_score)
+
+# mean, median, and SD
+summary(dat$baseline_iso_score) # gives the mean, SD, and median
+sd(dat$baseline_iso_score, na.rm = T) # 1.42
+
+# Summary by sex:
+(sex_summary <- dat %>%
+  group_by(gender) %>%
+  count(baseline_iso_score))
+
+```
 
 
 
