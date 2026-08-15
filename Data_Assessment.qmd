@@ -185,7 +185,7 @@ sd(dat$baseline_iso_score, na.rm = T) # 1.42
 # Summary by gender (out of curiosity):
 (sex_summary <- dat %>%
   group_by(gender) %>%
-  count(baseline_iso_score))
+  count(baseline_iso_score) %>% print(n = Inf)
 
 ```
 
@@ -302,12 +302,13 @@ surv_model_2 <- coxph(
 summary(surv_model_2)
 
 
-
-
+# copied from survival analysis better summary table:
+tidy(surv_model_2, exponentiate = TRUE, conf.int = TRUE)
 ```
 
+If we did a logistic regression, the question would be the logit of the probability of dementia being diagnosed (log(P(dementia)/(1 - P(dementia)))) = $X^T\beta + \epsilon$
 
-
+SInce we did a Cox Proportional hazards model, the final table for estimate contains the hazard ratio at which if an participant had this covariate symptom, their risk for dementia increases or decreased by (1 - estimate)%. vs that of not having the covariate or symptom, adjusting for all other covariates.  
 
 # Comments, Next Steps, Takeaways
 
@@ -324,4 +325,5 @@ summary(surv_model_2)
 
 - I would check my cox ph assumptions that the hazard function is constant across time, I would plot the cox.zph() for the data is normal and independent assumption. 
 
+- I would reassess what covariates to include in the final model. 
 
