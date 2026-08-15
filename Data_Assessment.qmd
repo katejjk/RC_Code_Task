@@ -32,9 +32,12 @@ Displaying my machine information for reproducibility:
 sessionInfo()
 ```
 
-```{r libraries}
+```{r libraries, message=F, warning=F}
 library(readr)
-
+library(survival)
+library(tidyr)
+library(tidymodels)
+library(dplyr)
 ```
 
 
@@ -44,8 +47,116 @@ Dataset (for reference): "This data set is from a study that measured social iso
 the baseline visit the study team released only the raw item responses, listed below, and did not distribute a derived score. The follow-up visits (`iso08 onward`) were scored by the study team using the same rules."
 
 ```{r}
-dat <- read.csv("~/UCLA Things/RC_Code_Task/SocialIsolationDementiaExample.csv")
+dat <- read.csv("SocialIsolationDementiaExample.csv")
 ```
+
+
+# Descriptive Statistics
+
+Here I assess the data structure, variable types, and next steps to approach derivation of score variable. 
+
+
+```{r}
+# str(long.dat)
+psych::describe(dat) %>% print(n = Inf)
+```
+
+Also to assess missingness:
+
+```{r}
+sapply(dat, function(x) sum(is.na(x)))
+```
+
+
+# Question 1 
+
+*1.Construct the baseline social isolation index from the raw item responses, following the scoring rules above. Note any decisions you had to make along the way. Report the distribution: how many participants you could score, the frequency of each value, and the mean, SD, and median. Does the index look reasonable to you?* 
+
+**Response**: We are given the construction of the index score for follow up but  not as baseline. Here, I will repeat the scoring rule to derive the baseline social isolation index from the data. 
+
+
+The scoring rule: 
+
+Scoring rules. The index is the sum of six items, each scored 1 (isolated) or 0 (not isolated).
+Range 0 to 6, higher means more isolated.
+
+1. Lives alone: 1 point if Q1 = Yes.
+
+2. Infrequent contact with children: 1 point if Q3 is 1, 2, or 3, that is, less than monthly.
+
+3. Infrequent contact with friends: 1 point if Q4 is 1, 2, or 3.
+
+4. Infrequent contact with other relatives: 1 point if Q5 is 1, 2, or 3.
+
+5. No religious participation: 1 point if Q6 = 1 (never).
+
+6. No group participation: 1 point if Q7 = 1 (never).
+
+
+```{r}
+dat %>% count(livalone06) # 1 = yes
+dat %>% count(nkids) # 98 <- NA
+dat %>%count(kidcon06) # Q3
+dat %>% count(frcon06) # Q4 
+dat %>% count(relcon06) # Q5 
+dat %>% count(relig06) # Q6 # 1 = never
+dat %>% count(club06) # Q7
+#>Response options for Q3, Q4, and Q5: 1 = Never | 2 = Less than once a year | 3 = A few times a year | 4 = One to three times a month | 5 = About once a week | 6 = Daily or almost daily | 9 = Don’t know or refused
+
+# Convert 98 to NA
+dat$nkids[dat$nkids == 98] <- NA
+dat$kidcon06[dat$kidcon06 == 9] <- NA
+dat$frcon06[dat$frcon06 == 9] <- NA
+## Cautionary note: 7 was not included for religion but was found as a value, so safe side to make it NA
+dat$relig06[dat$relig06 == 7] <- NA
+
+## Iso-index questionnaires (all but question 2, but question 2 indiciates whether response to question 3,4, or 5):
+
+
+# # Q1: Lives alone, use livalone06 directly, 
+# 
+# # Q2: Infrequent contact with kids:
+# dat$iso_with_kids <- case_when(
+#   dat$nkids == 0 ~ 0, # If no kids, then must be 0, do not add the next questions
+#   kidcon06 %in% c(1,2,3) ~ 1, # 1 point, if 1,2 or 3 
+#   TRUE ~ NA
+# )
+# 
+# # Q3: Infrequent contact with friends
+# dat$iso_no_friends <- ifelse(frcon06 %in% c(1,2,3), 1, 0)
+# 
+# # Q4: Infrequent contact with relatives
+# dat$iso_relatives <- ifelse(relcon06 %in% c(1,2,3), 1, 0)
+# 
+# # Q5: no religious participatino
+# dat$iso_religion <- ifelse(relig06 == 1, 1, 0)
+# 
+# # Q6 No group participation
+# dat$iso_no_group <- ifelse(club06 == 1, 1, 0)
+
+dat <- dat %>%
+  mutate(
+    iso_with_kids = case_when(
+      nkids == 0 ~ 0, # If no kids, then must be 0, do not add the next questions
+      kidcon06 %in% c(1,2,3) ~ 1, # 1 point, if 1,2 or 3 
+      TRUE ~ NA_real_
+      ),
+  iso_no_friends =  ifelse(frcon06 %in% c(1,2,3), 1, 0),
+  iso_relatives =  ifelse(relcon06 %in% c(1,2,3), 1, 0), 
+  iso_religion = ifelse(relig06 == 1, 1, 0),
+  iso_no_group = ifelse(club06 == 1, 1, 0)
+  )
+colnames(dat)
+
+## Create the baseline score: Sum of 6:
+dat <- dat %>%
+  mutate(baseline_iso_score = rowSums(
+    select(., livalone06, iso_with_kids, iso_no_friends, iso_relatives, iso_religion, iso_no_group)
+  ))
+
+
+```
+
 
 
 
